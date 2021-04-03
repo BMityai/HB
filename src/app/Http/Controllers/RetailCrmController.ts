@@ -20,7 +20,7 @@ export default class RetailCrmController {
             let orderNumber = createOrderUnifier.orderNumber;
 
             logger.info('Request to create order ' + orderNumber + ' from retail crm');
-            service.createOrder(orderNumber);
+            await service.createOrder(orderNumber);
             logger.info('Order ' + orderNumber + ' created successfully');
 
             return response.send();

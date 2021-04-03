@@ -1,5 +1,8 @@
 export default interface CrmOrderType {
-    id: number;
-    externalId: string;
+    number: number;
     totalSum: number;
+    payments: object;
+    site: string;
+    delivery: object;
+    createdDate: string;
 }

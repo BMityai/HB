@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import { defaultsDeep } from 'lodash';
 import Helper from 'sosise-core/build/Helper/Helper';
 import retailCrmConfig from '../../config/retailCrm';
+import NoSuchOrderException from '../Exceptions/NoSuchOrderException';
 import CrmOrderType from '../Types/CrmOrderType';
 import RetailCrmRepositoryInterface from './RetailCrmRepositoryInterface';
 
@@ -25,7 +26,7 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
     /**
      * Get crm order by number method
      */
-    public async getOrderByNumber(orderNumber: string): Promise<CrmOrderType | null> {
+    public async getOrderByNumber(orderNumber: number): Promise<CrmOrderType> {
         // Prepare params
         const params = {
             'apiKey': this.apiKey,
@@ -39,16 +40,18 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
         const order = response.data.orders[0];
 
         if (!order) {
-            return null;
+            throw new NoSuchOrderException('Order #' + orderNumber + ' Not Found In Crm');
         }
 
         // Typecast to return type
         const returnObject: CrmOrderType = {
-            id: order.id,
-            externalId: order.externalId,
-            totalSum: order.totalSumm
+            number: order.number,
+            totalSum: order.customFields.main_payment,
+            payments: order.payments,
+            site: order.site,
+            delivery: order.delivery,
+            createdDate: order.createdAt
         };
-
         return returnObject;
     }
 }
