@@ -42,16 +42,7 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
         if (!order) {
             throw new NoSuchOrderException('Order #' + orderNumber + ' Not Found In Crm');
         }
-
-        // Typecast to return type
-        const returnObject: CrmOrderType = {
-            number: order.number,
-            totalSum: order.customFields.main_payment,
-            payments: order.payments,
-            site: order.site,
-            delivery: order.delivery,
-            createdDate: order.createdAt
-        };
-        return returnObject;
+       
+        return new CrmOrderType(order);
     }
 }

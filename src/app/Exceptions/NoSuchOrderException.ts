@@ -20,6 +20,7 @@ export default class NoSuchOrderException extends Exception {
      */
     public handle(exception: this): ExceptionType {
         const response: ExceptionType = {
+            httpCode: exception.httpCode,
             message: exception.message,
         };
         return response;
