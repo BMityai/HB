@@ -5,7 +5,7 @@ import BaseSchema from 'sosise-core/build/Database/BaseSchema';
  */
 export default class Customers extends BaseSchema {
 
-    protected tableName = 'table_name_comes_here';
+    protected tableName = 'customers';
 
     /**
      * Run the migrations.

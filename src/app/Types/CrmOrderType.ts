@@ -1,4 +1,5 @@
 import IsNotHalykBankOrderException from "../Exceptions/IsNotHalykBankOrderException";
+import lodash, { isEmpty, isNull } from 'lodash'
 
 export default class CrmOrderType {
     
@@ -12,21 +13,35 @@ export default class CrmOrderType {
         city: string;
         address: string;
         pickupPointName: string;
+        price: string
     } = {
         type: '',
         city: '',
         address: '',
-        pickupPointName: ''
+        pickupPointName: '',
+        price: ''
     };
     public payment: {
         paymentId: string;
         paymentType: string;
         creditCode: string;
+        spendBonuses: number;
     } = {
         paymentId: '',
         paymentType: '',
-        creditCode: ''
-    }
+        creditCode: '',
+        spendBonuses: 0
+    };
+    public products: {
+            status: string,
+            price: number,
+            name: string,
+            group: string,
+            article: string,
+            isService: boolean,
+            quantity: string
+    }[] = [];
+    public customerPhone: string;
 
 
     /**
@@ -71,7 +86,13 @@ export default class CrmOrderType {
         this.setPickupPointName();
 
         //set creditCode
-        this.setPickupPointName();
+        this.delivery.price = this.order.delivery.cost;
+
+        //set products
+        this.setProducts();
+
+        //set customer Phone
+        this.setCustomerPhone();
     }
 
     /**
@@ -108,7 +129,7 @@ export default class CrmOrderType {
     {
         const payments = this.order.payments;
         const key = Object.keys(payments)[0];
-        console.log(key);
+        
         //setPaymentId
         this.payment.paymentId = key;
 
@@ -117,5 +138,86 @@ export default class CrmOrderType {
         
         //setCreditCode
         this.payment.creditCode = this.payment.paymentType == 'halyk-credit' ? 'loan' : 'installment';
+
+        //setSpendBonuses
+        this.payment.spendBonuses = this.getSpenBonuses();
+    }
+
+    /**
+     * Get Spend Bonuses
+     * @returns 
+     */
+    private getSpenBonuses(): number
+    {
+        const payments = this.order.payments;
+        for(const key of Object.keys(payments)) {
+            let payment = payments[key];
+            if(payment.paymentType == 'bonuses-sl' && payment.status == 'paid' && !isEmpty(payment.amount)) {
+                return payment.amount;
+            }
+        };
+        return 0;
+
+    }
+
+    /**
+     * Set Order Products
+     */
+    private setProducts(): void
+    {
+        this.order.items.forEach(item => {
+            this.products.push( {
+                status: item.status,
+                name: item.offer.name,
+                price: this.getProductPrice(item),
+                group: this.getGroup(item), 
+                article: item.offer.xmlId ?? item.offer.externalId,
+                isService: false,
+                quantity: item.quantity
+            })
+        });
+    }
+
+    /**
+     * Get Per Product Price
+     * @param item 
+     * @returns 
+     */
+    private getProductPrice(item: any): number
+    {
+        const discountTotal = item.discountTotal | 0;
+        return item.initialPrice - discountTotal;
+    }
+
+    /**
+     * Get Per Product Group (KIM | Categories)
+     * @param item 
+     * @returns 
+     */
+    private getGroup(item): string
+    {
+        const firstLevel = lodash.get(item, 'properties.kim_name_level1.value', null);
+        const secondLevel = lodash.get(item, 'properties.kim_name_level2.value', null);
+        const thirdLevel = lodash.get(item, 'properties.kim_name_level3.value', null);
+
+        const firstCategory = firstLevel ?? null;
+        const secondCategory = !isNull(secondLevel) ? '/' + secondLevel : null;
+        const thirdCategory = !isNull(thirdLevel) ? '/' + thirdLevel : null;
+
+        return firstCategory + secondCategory + thirdCategory;
+    }
+
+    /**
+     * Set Customer Phone
+     */
+    private setCustomerPhone(): void
+    {
+        this.customerPhone = this.getCustomerPhone();
+    }
+
+    private getCustomerPhone(): string
+    {
+        const phone = this.order.phone;
+        return phone.replace('/[^\d]/', '');
     }
 }
