@@ -1,6 +1,9 @@
+import CrmOrderType from "../Types/CrmOrderType";
+
 export default interface HalykBankRepositoryInterface {
     /**
-     * Example
+     * Get Deeplink
      */
-    example(limit: number): Promise<any>;
+    getDeeplink(crmOrder: CrmOrderType): Promise <string>;
+    
 }

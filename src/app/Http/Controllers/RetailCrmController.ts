@@ -7,21 +7,46 @@ import IOC from 'sosise-core/build/ServiceProviders/IOC';
 
 export default class RetailCrmController {
 
+    private service: RetailCrmService;
+    private logger: LoggerService;
+
+    constructor()
+    {
+        this.service = IOC.make(RetailCrmService) as RetailCrmService;
+        this.logger  = IOC.make(LoggerService) as LoggerService;
+
+    }
     /**
      * Receiving order from RetailCrm
      */
     public async createOrder(request: Request, response: Response, next: NextFunction) {
-        const logger  = IOC.make(LoggerService) as LoggerService;
-        const service = IOC.make(RetailCrmService) as RetailCrmService;
         const createOrderUnifier = new CreateOrderUnifier(request.query);
-
 
         try {
             let orderNumber = createOrderUnifier.orderNumber;
 
-            logger.info('Request to create order ' + orderNumber + ' from retail crm');
-            await service.createOrder(orderNumber);
-            logger.info('Order ' + orderNumber + ' created successfully');
+            this.logger.info('Request to create order ' + orderNumber + ' from retail crm');
+            await this.service.createOrder(orderNumber);
+            this.logger.info('Order ' + orderNumber + ' created successfully');
+
+            return response.send();
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
+     * Receiving order from RetailCrm
+     */
+    public async getDeeplink(request: Request, response: Response, next: NextFunction) {
+        const createOrderUnifier = new CreateOrderUnifier(request.query);
+
+        try {
+            let orderNumber = createOrderUnifier.orderNumber;
+
+            this.logger.info('Request to Get DeepLink ' + orderNumber + ' from retail crm');
+            const deeplink = await this.service.getDeeplink(orderNumber);
+            this.logger.info('Deeplink ' + deeplink + ' for order #' + orderNumber + ' created successfully');
 
             return response.send();
         } catch (error) {

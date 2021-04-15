@@ -42,7 +42,26 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
         if (!order) {
             throw new NoSuchOrderException('Order #' + orderNumber + ' Not Found In Crm');
         }
-       
+
         return new CrmOrderType(order);
+    }
+
+    /**
+ * Send deeplink to Retail CRM
+ * @param params 
+ */
+    public async connectDeeplinkWithOrder(data: any): Promise<void> {
+        // Prepare data
+        const params = {
+            'apiKey': this.apiKey,
+            'order': JSON.stringify({
+                customFields: {
+                    deeplink: data.deeplink
+                },
+            }),
+            'site': data.site
+        }
+
+       await this.httpClient.post('v5/orders/' + data.orderNumber + '/edit', params);
     }
 }
