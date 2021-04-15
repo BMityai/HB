@@ -1,8 +1,10 @@
 import IsNotHalykBankOrderException from "../Exceptions/IsNotHalykBankOrderException";
 import lodash, { isEmpty, isNull } from 'lodash'
+import HalykBankRepository from '../Repositories/HalykBankRepositoryInterface'
+import RetailCrmRepository from '../Repositories/RetailCrmRepositoryInterface'
 
 export default class CrmOrderType {
-    
+
     private order: any;
     public number: number;
     public cartAmount: number;

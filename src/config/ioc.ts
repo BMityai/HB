@@ -41,14 +41,14 @@ const iocConfig = {
         // }
 
         RetailCrmService:() => {
-            if (process.env.APP_ENV === 'local') {
-                return new RetailCrmService(
-                    new HalykBankDbRepository,
-                    new HalykBankRepository,
-                    new RetailCrmRepository
-                );
-            }
-        }
+            return new RetailCrmService(
+                new HalykBankDbRepository,
+                new HalykBankRepository,
+                new RetailCrmRepository
+            );
+        },
+
+
 
 
         

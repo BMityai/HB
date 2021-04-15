@@ -1,3 +1,4 @@
+import StoresEnum from '../Enums/StoresEnum';
 import HalykBankDbRepository from '../Repositories/HalykBankDbRepositoryInterface'
 import HalykBankRepository from '../Repositories/HalykBankRepositoryInterface'
 import RetailCrmRepository from '../Repositories/RetailCrmRepositoryInterface'
@@ -46,10 +47,10 @@ export default class RetailCrmService {
      * 
      * @param orderNumber 
      */
-    public async createOrder(orderNumber: number): Promise<any> {
+    public async createOrder(orderNumber: number): Promise<void> {
         const crmOrder = await this.retailCrmRepository.getOrderByNumber(orderNumber);
 
-        //check is halyk bank order before save order
+        // check is halyk bank order before save order
         crmOrder.checkIsHalyk();
 
         //save order
@@ -58,10 +59,8 @@ export default class RetailCrmService {
         const promises = new Array;
 
         //save customer phone promise
-        promises.push(new Promise((resolve, reject) => {
-                resolve(this.halykBankDbRepository.saveCustomerPhone(crmOrder.customerPhone, orderId));
-            })
-        )
+        promises.push(this.halykBankDbRepository.saveCustomerPhone(crmOrder.customerPhone, orderId));
+        
 
         //save order products promise
         promises.push(new Promise((resolve, reject) => {
@@ -88,9 +87,15 @@ export default class RetailCrmService {
         )
 
         //run all promises 
-        Promise.all(promises);
+        // await Promise.all(promises);
     }
 
+    /**
+     * Save Order Products
+     * 
+     * @param crmOrder 
+     * @param orderId 
+     */
     protected async saveOrderProducts(crmOrder: CrmOrderType, orderId: number): Promise<void> {
         const promises = new Array
         for (const product of crmOrder.products) {
@@ -103,4 +108,25 @@ export default class RetailCrmService {
         }
         Promise.all(promises)
     }
+
+    public async getDeeplink(orderNumber: number): Promise <string>
+    {
+        // Get order by orderNumber from Retail CRM
+        const crmOrder = await this.retailCrmRepository.getOrderByNumber(orderNumber);
+
+        // Check is halyk bank order before get deeplink
+        crmOrder.checkIsHalyk();
+
+        // Get deeplink from bank
+        const deeplink = await this.halykBankRepository.getDeeplink(crmOrder);
+
+        
+        await this.retailCrmRepository.connectDeeplinkWithOrder(crmOrder.number, crmOrder.site as StoresEnum, deeplink);
+        
+        return deeplink;
+    }
+
+
+
+
 }
