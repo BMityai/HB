@@ -47,9 +47,8 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
     }
 
     /**
- * Send deeplink to Retail CRM
- * @param params 
- */
+     * Send deeplink to Retail CRM
+     */
     public async connectDeeplinkWithOrder(orderNumber: string, store: StoresEnum, deeplink: string): Promise<void> 
     {
         // Prepare data
