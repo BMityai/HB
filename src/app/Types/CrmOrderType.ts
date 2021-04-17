@@ -6,7 +6,7 @@ import RetailCrmRepository from '../Repositories/RetailCrmRepositoryInterface'
 export default class CrmOrderType {
 
     private order: any;
-    public number: number;
+    public number: string;
     public cartAmount: number;
     public site: string;
     public createdDate: string;
@@ -61,6 +61,7 @@ export default class CrmOrderType {
 
     public checkIsHalyk(): void
     {
+        console.log(this.payment.paymentType);
         if(this.payment.paymentType == 'halyk-credit' || this.payment.paymentType == 'halyk-rassrochka') {
             return;
         }

@@ -5,6 +5,7 @@ import RetailCrmService from '../app/Services/RetailCrmService';
 import HalykBankDbRepository from '../app/Repositories/HalykBankDbRepository';
 import HalykBankRepository from '../app/Repositories/HalykBankRepository';
 import RetailCrmRepository from '../app/Repositories/RetailCrmRepository';
+import HalykBankService from '../app/Services/HalykBankService';
 
 const iocConfig = {
     /**
@@ -42,6 +43,14 @@ const iocConfig = {
 
         RetailCrmService:() => {
             return new RetailCrmService(
+                new HalykBankDbRepository,
+                new HalykBankRepository,
+                new RetailCrmRepository
+            );
+        },
+
+        HalykBankService:() => {
+            return new HalykBankService(
                 new HalykBankDbRepository,
                 new HalykBankRepository,
                 new RetailCrmRepository

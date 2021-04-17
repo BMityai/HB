@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import LoggerService from 'sosise-core/build/Services/Logger/LoggerService';
-import RetailCrmService from '../../Services/RetailCrmService';
 import CreateOrderUnifier from '../../Unifiers/CreateOrderUnifier'
 import IOC from 'sosise-core/build/ServiceProviders/IOC';
+import HalykBankService from '../../Services/HalykBankService';
+import RetailCrmService from '../../Services/RetailCrmService';
 
 
 export default class RetailCrmController {

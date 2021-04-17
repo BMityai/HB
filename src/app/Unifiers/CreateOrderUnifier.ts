@@ -7,7 +7,7 @@ import ValidationException from 'sosise-core/build/Exceptions/Validation/Validat
 export default class CreateOrderUnifier {
 
     private params: any;
-    public  orderNumber: number;
+    public  orderNumber: string;
 
     /**
      * Constructor

@@ -36,7 +36,8 @@ export default class RetailCrmService {
     constructor(
         halykBankDbRepository: HalykBankDbRepository,
         halykBankRepository: HalykBankRepository,
-        retailCrmRepository: RetailCrmRepository) {
+        retailCrmRepository: RetailCrmRepository
+    ) {
         this.halykBankDbRepository = halykBankDbRepository
         this.halykBankRepository = halykBankRepository
         this.retailCrmRepository = retailCrmRepository
@@ -47,7 +48,7 @@ export default class RetailCrmService {
      * 
      * @param orderNumber 
      */
-    public async createOrder(orderNumber: number): Promise<void> {
+    public async createOrder(orderNumber: string): Promise<void> {
         const crmOrder = await this.retailCrmRepository.getOrderByNumber(orderNumber);
 
         // check is halyk bank order before save order
@@ -63,31 +64,20 @@ export default class RetailCrmService {
         
 
         //save order products promise
-        promises.push(new Promise((resolve, reject) => {
-                resolve(this.saveOrderProducts(crmOrder, orderId));
-            })
-        )
-
+        promises.push(this.saveOrderProducts(crmOrder, orderId));
+        
         //save spend bonuses promise
-        promises.push(new Promise((resolve, reject) => {
-                resolve(this.halykBankDbRepository.saveSpendBonuses(crmOrder.payment.spendBonuses, orderId));
-            })
-        )
-
+        promises.push(this.halykBankDbRepository.saveSpendBonuses(crmOrder.payment.spendBonuses, orderId));
+           
         //save order service promise
-        promises.push(new Promise((resolve, reject) => {
-                resolve(this.halykBankDbRepository.saveService(crmOrder.delivery, orderId));
-            })
-        )
+        promises.push(this.halykBankDbRepository.saveService(crmOrder.delivery, orderId));
+           
 
         //save log info to db
-        promises.push(new Promise((resolve, reject) => {
-                resolve(this.halykBankDbRepository.editComment(orderId, 'import from crm'));
-            })
-        )
-
+        promises.push(this.halykBankDbRepository.editComment(orderId, 'import from crm'));
+           
         //run all promises 
-        // await Promise.all(promises);
+        await Promise.all(promises);
     }
 
     /**
@@ -109,7 +99,7 @@ export default class RetailCrmService {
         Promise.all(promises)
     }
 
-    public async getDeeplink(orderNumber: number): Promise <string>
+    public async getDeeplink(orderNumber: string): Promise <string>
     {
         // Get order by orderNumber from Retail CRM
         const crmOrder = await this.retailCrmRepository.getOrderByNumber(orderNumber);
@@ -120,13 +110,9 @@ export default class RetailCrmService {
         // Get deeplink from bank
         const deeplink = await this.halykBankRepository.getDeeplink(crmOrder);
 
-        
+        // Connect deeplink to crm order
         await this.retailCrmRepository.connectDeeplinkWithOrder(crmOrder.number, crmOrder.site as StoresEnum, deeplink);
         
         return deeplink;
     }
-
-
-
-
 }

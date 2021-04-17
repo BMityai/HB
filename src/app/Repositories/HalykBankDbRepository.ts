@@ -1,9 +1,9 @@
 import HalykBankDbRepositoryInterface from './HalykBankDbRepositoryInterface';
 import Database from 'sosise-core/build/Database/Database';
 import dbConfig from '../../config/database';
-import halykConfig from '../../config/halyk';
 import CrmOrderType from '../Types/CrmOrderType';
-import { isNull } from 'lodash';
+import { isEmpty, isNull } from 'lodash';
+import HalykBankOrderType from '../Types/HalykBankOrderType';
 
 
 
@@ -22,14 +22,14 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
     /**
      * Save Order From CRM
      */
-    public async saveOrder(crmOrder: CrmOrderType): Promise<number>{
-        const orderIds = await this.dbConnection.client.table('orders')  
+    public async saveOrder(crmOrder: CrmOrderType): Promise<number> {
+        const orderIds = await this.dbConnection.client.table('orders')
             .insert({
                 status: 'wait',
                 number: crmOrder.number,
                 cart_amount: crmOrder.cartAmount,
                 site: crmOrder.site,
-                delivery_type:crmOrder.delivery.type, 
+                delivery_type: crmOrder.delivery.type,
                 delivery_city: crmOrder.delivery.city,
                 delivery_address: crmOrder.delivery.address,
                 pickup_point_name: crmOrder.delivery.pickupPointName,
@@ -46,8 +46,7 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
      *  Save Spend Bonuses
  
    */
-    public async saveSpendBonuses(spendBonuses: number, orderId: number): Promise<void>
-    {
+    public async saveSpendBonuses(spendBonuses: number, orderId: number): Promise<void> {
         await this.dbConnection.client.table('products').insert(
             {
                 order_id: orderId,
@@ -67,8 +66,7 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
     /**
      * Save Customer Phone
      */
-    public async saveCustomerPhone(phoneNumber: string, orderId: number): Promise <void>
-    {
+    public async saveCustomerPhone(phoneNumber: string, orderId: number): Promise<void> {
         await this.dbConnection.client.table('customers').insert({
             phone: phoneNumber,
             order_id: orderId,
@@ -80,8 +78,7 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
     /**
      * Save Order Per Product
      */
-    public async savePerProduct(product, orderId: number): Promise <void> 
-    {
+    public async savePerProduct(product, orderId: number): Promise<void> {
         await this.dbConnection.client.table('products').insert(
             {
                 order_id: orderId,
@@ -98,9 +95,9 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
     }
 
     /**
-     * saveService
-    */public async saveService(deliveryInfo: any, orderId: number): Promise <void>
-    {
+     * Save Services
+     */
+    public async saveService(deliveryInfo: any, orderId: number): Promise<void> {
         await this.dbConnection.client.table('products').insert({
             order_id: orderId,
             price: deliveryInfo.price,
@@ -119,13 +116,67 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
     /**
      * Edit Comment
      */
-    public async editComment(orderId: number, message: string): Promise <void>
-    {
+    public async editComment(orderId: number, message: string): Promise<void> {
         const order = await this.dbConnection.client.table('orders').select('system_comment').where('id', orderId).first();
-        await this.dbConnection.client.table('orders').update({
-            system_comment: !isNull(order.system_comment) ? order.system_comment + new Date() + ' - ' + message + '  \n' : new Date() + ' - ' + message + '  \n',
+        await this.dbConnection.client.table('orders').where('id', orderId).update({
+            system_comment: !isNull(order.system_comment) 
+                            ? order.system_comment + new Date().toLocaleString() + ' - ' + message + '  \n' 
+                            : new Date().toLocaleString() + ' - ' + message + '  \n',
             updated_at: new Date()
         });
 
+    }
+
+
+    /**
+     * Get Order By Number
+     */
+    public async getOrderByNumber(ordreNumber: string): Promise<HalykBankOrderType | null> {
+        // Get order from db
+        const order = await this.dbConnection.client
+            .table('orders')
+            .where('number', ordreNumber)
+            .first();
+
+        if (!order) {
+            return null;
+        }
+
+        // Get order products
+        const products = await this.getOrderProducts(order.id);
+
+        // Prepare order
+        const halykBankOrder = new HalykBankOrderType(order);
+
+        // Set products
+        if (!isNull(products)) {
+            halykBankOrder.setGoods(products);
+        }
+
+        return halykBankOrder;
+    }
+
+
+    /**
+     * Get Order Products
+     */
+    private async getOrderProducts(orderId: number): Promise<any> {
+        return await this.dbConnection.client.table('products').where('order_id', orderId);
+    }
+
+    /**
+     * Change Order Status
+     */
+    public async changeOrderStatus(orderId: number, status: string): Promise<void> {
+        await this.dbConnection.client
+            .table('orders')
+            .select('system_comment')
+            .where('id', orderId)
+            .first()
+            .update({
+                status: status,
+                updated_at: new Date()
+            });
+       
     }
 }

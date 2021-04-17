@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { defaultsDeep } from 'lodash';
-import Helper from 'sosise-core/build/Helper/Helper';
+import StoresEnum from '../Enums/StoresEnum';
 import retailCrmConfig from '../../config/retailCrm';
 import NoSuchOrderException from '../Exceptions/NoSuchOrderException';
 import CrmOrderType from '../Types/CrmOrderType';
@@ -26,7 +26,7 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
     /**
      * Get crm order by number method
      */
-    public async getOrderByNumber(orderNumber: number): Promise<CrmOrderType> {
+    public async getOrderByNumber(orderNumber: string): Promise<CrmOrderType> {
         // Prepare params
         const params = {
             'apiKey': this.apiKey,
@@ -50,18 +50,35 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
  * Send deeplink to Retail CRM
  * @param params 
  */
-    public async connectDeeplinkWithOrder(data: any): Promise<void> {
+    public async connectDeeplinkWithOrder(orderNumber: string, store: StoresEnum, deeplink: string): Promise<void> 
+    {
         // Prepare data
         const params = {
             'apiKey': this.apiKey,
             'order': JSON.stringify({
                 customFields: {
-                    deeplink: data.deeplink
+                    deeplink: deeplink
                 },
             }),
-            'site': data.site
+            'site': store
         }
+       await this.httpClient.post('v5/orders/' + orderNumber + '/edit', params);
+    }
 
-       await this.httpClient.post('v5/orders/' + data.orderNumber + '/edit', params);
+    /**
+     * Send Confirmation Of Order Export
+     */
+    public async sendOrderBeenExportedConfirmation(orderNumber: string, store: StoresEnum): Promise <void>
+    {
+        const params = {
+            'apiKey': this.apiKey,
+            'order': JSON.stringify({
+                customFields: {
+                    halyk_order_accepted: true
+                },
+            }),
+            'site': store
+        }
+        await this.httpClient.post('v5/orders/' + orderNumber + '/edit', params);
     }
 }

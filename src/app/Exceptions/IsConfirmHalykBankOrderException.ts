@@ -1,9 +1,8 @@
 import Exception from 'sosise-core/build/Exceptions/Exception';
 import ExceptionCustomType from '../Types/ExceptionForHalykBank';
 
-export default class IsNotHalykBankOrderException extends Exception {
+export default class IsConfirmHalykBankOrderException extends Exception {
 
-    // This variables are optional, you may remove them
     protected httpCode = 404;
     protected code = 404;
 
@@ -12,7 +11,6 @@ export default class IsNotHalykBankOrderException extends Exception {
      */
     constructor(message: string) {
         super(message);
-
     }
 
     /**
@@ -20,8 +18,8 @@ export default class IsNotHalykBankOrderException extends Exception {
      */
     public handle(exception: this): ExceptionCustomType {
         const response: ExceptionCustomType = {
-            code: this.code,
-            httpCode: this.httpCode,
+            code: this.code, // optional
+            httpCode: this.httpCode, // optional
             message: exception.message
         };
         return response;

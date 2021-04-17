@@ -6,10 +6,15 @@ export default interface RetailCrmRepositoryInterface {
     /**
      * Get order by number method
      */
-    getOrderByNumber(orderNumber: number): Promise<CrmOrderType>;
+    getOrderByNumber(orderNumber: string): Promise<CrmOrderType>;
 
     /**
      * Send deeplink to Retail CRM
      */
-    connectDeeplinkWithOrder(orderNumber: number, store: StoresEnum, deeplink: string): Promise<void>
+    connectDeeplinkWithOrder(orderNumber: string, store: StoresEnum, deeplink: string): Promise<void>
+
+    /**
+     * Send Confirmation Of Order Export
+     */
+    sendOrderBeenExportedConfirmation(orderNumber: string, store: StoresEnum): Promise <void>
 }
