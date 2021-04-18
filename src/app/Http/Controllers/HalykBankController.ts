@@ -5,6 +5,7 @@ import LoggerService from 'sosise-core/build/Services/Logger/LoggerService';
 import HttpResponse from 'sosise-core/build/Types/HttpResponse';
 import HalykBankService from '../../Services/HalykBankService';
 import RetailCrmService from '../../Services/RetailCrmService';
+import ConfirmOrderUnifier from '../../Unifiers/ConfirmOrderUnifier';
 import CreateOrderUnifier from '../../Unifiers/CreateOrderUnifier';
 
 export default class HalykBankController {
@@ -59,6 +60,38 @@ export default class HalykBankController {
             // Send response
             return response.send(httpResponse);
 
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public async confirmOrder(request: Request, response: Response, next: NextFunction)
+    {
+        // Unifier init
+        const confirmOrderUnifier = new ConfirmOrderUnifier(request.body);
+
+        try {
+
+            // Get request data
+            const confirmOrderInfo = confirmOrderUnifier.confirmOrderInfo;
+
+            // Logger
+            this.logger.info('Request for confirmation of order #' + confirmOrderInfo.orderNumber + ' from Halyk Bank');
+
+            // Confirm order and sync with crm
+            await this.service.confirmOrder(confirmOrderInfo);
+
+             // Logger
+             this.logger.info('Order #' + confirmOrderInfo.orderNumber + ' successfully synchronized with crm');
+
+             // Prepare http response
+            const httpResponse = {
+                code: 0,
+                message: 'success',
+            };
+
+            // Send response
+            return response.send(httpResponse);
         } catch (error) {
             next(error);
         }

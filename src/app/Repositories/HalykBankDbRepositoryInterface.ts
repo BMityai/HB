@@ -4,32 +4,32 @@ import HalykBankOrderType from "../Types/HalykBankOrderType";
 export default interface HalykBankDbRepositoryInterface {
 
     /**
-     * Save Order From CRM
+     * Save order from crm
      */
     saveOrder(crmOrder: CrmOrderType): Promise<number>
 
     /**
-     * Save Spend Bonuses In Products  
+     * Save spend bonuses in products  
      */
     saveSpendBonuses(spendBonuses: number, orderId: number): Promise<void>
 
     /**
-     * Save Customer Phone
+     * Save customer phone
      */
     saveCustomerPhone(phoneNumber: string, orderId: number): Promise<void>
 
     /**
-     * Save Order Per Product
+     * Save order per product
      */
     savePerProduct(product: any, orderId: number): Promise<void>
 
     /**
-     * Save Order Service
+     * Save order service
      */
     saveService(delivery: any, orderId: number): Promise<void>
 
     /**
-     * Edit Comment
+     * Edit comment
      */
     editComment(orderId: number, message: string): Promise<void>
 

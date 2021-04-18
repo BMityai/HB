@@ -51,7 +51,7 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
      */
     public async connectDeeplinkWithOrder(orderNumber: string, store: StoresEnum, deeplink: string): Promise<void> 
     {
-        // Prepare data
+        // prepare data
         const params = {
             'apiKey': this.apiKey,
             'order': JSON.stringify({
@@ -65,7 +65,7 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
     }
 
     /**
-     * Send Confirmation Of Order Export
+     * Send confirmation of order export
      */
     public async sendOrderBeenExportedConfirmation(orderNumber: string, store: StoresEnum): Promise <void>
     {

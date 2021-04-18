@@ -20,7 +20,7 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
     }
 
     /**
-     * Save Order From CRM
+     * Save order from crm
      */
     public async saveOrder(crmOrder: CrmOrderType): Promise<number> {
         const orderIds = await this.dbConnection.client.table('orders')
@@ -43,7 +43,7 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
     }
 
     /**
-     *  Save Spend Bonuses
+     *  Save spend bonuses
  
    */
     public async saveSpendBonuses(spendBonuses: number, orderId: number): Promise<void> {
@@ -64,7 +64,7 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
     }
 
     /**
-     * Save Customer Phone
+     * Save customer phone
      */
     public async saveCustomerPhone(phoneNumber: string, orderId: number): Promise<void> {
         await this.dbConnection.client.table('customers').insert({
@@ -76,7 +76,7 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
     }
 
     /**
-     * Save Order Per Product
+     * Save order per product
      */
     public async savePerProduct(product, orderId: number): Promise<void> {
         await this.dbConnection.client.table('products').insert(
@@ -95,7 +95,7 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
     }
 
     /**
-     * Save Services
+     * Save services
      */
     public async saveService(deliveryInfo: any, orderId: number): Promise<void> {
         await this.dbConnection.client.table('products').insert({
@@ -114,7 +114,7 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
     }
 
     /**
-     * Edit Comment
+     * Edit comment
      */
     public async editComment(orderId: number, message: string): Promise<void> {
         const order = await this.dbConnection.client.table('orders').select('system_comment').where('id', orderId).first();
@@ -129,7 +129,7 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
 
 
     /**
-     * Get Order By Number
+     * Get order by number
      */
     public async getOrderByNumber(ordreNumber: string): Promise<HalykBankOrderType | null> {
         // Get order from db
@@ -158,14 +158,14 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
 
 
     /**
-     * Get Order Products
+     * Get order products
      */
     private async getOrderProducts(orderId: number): Promise<any> {
         return await this.dbConnection.client.table('products').where('order_id', orderId);
     }
 
     /**
-     * Change Order Status
+     * Change order status
      */
     public async changeOrderStatus(orderId: number, status: string): Promise<void> {
         await this.dbConnection.client

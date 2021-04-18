@@ -3,6 +3,7 @@ import StoresEnum from "../Enums/StoresEnum";
 import HalykBankDbRepositoryInterface from "../Repositories/HalykBankDbRepositoryInterface";
 import HalykBankRepositoryInterface from "../Repositories/HalykBankRepositoryInterface";
 import RetailCrmRepository from "../Repositories/RetailCrmRepository";
+import ConfirmOrderInfoType from "../Types/ConfirmOrderInfoType";
 import HalykBankOrderType from "../Types/HalykBankOrderType";
 
 export default class HalykBankService {
@@ -18,21 +19,20 @@ export default class HalykBankService {
         HalykBankDbRepository: HalykBankDbRepositoryInterface,
         HalykBankRepository: HalykBankRepositoryInterface,
         RetailCrmRepository: RetailCrmRepository
-        ) {
+    ) {
         this.halykBankDbRepository = HalykBankDbRepository;
         this.halykBankRepository = HalykBankRepository;
         this.retailCrmRepository = RetailCrmRepository;
     }
 
     /**
-     * Get Order From Db
+     * Get order from db
      */
 
-    public async getOrder(orderNumber: string): Promise <HalykBankOrderType | null>
-    {
-       const halykBankOrder = await this.halykBankDbRepository.getOrderByNumber(orderNumber);
+    public async getOrder(orderNumber: string): Promise<HalykBankOrderType | null> {
+        const halykBankOrder = await this.halykBankDbRepository.getOrderByNumber(orderNumber);
 
-        if( !isNull(halykBankOrder)) {
+        if (!isNull(halykBankOrder)) {
             // Logging to db
             await this.halykBankDbRepository.editComment(halykBankOrder.id, 'Order request from Halyk Bank');
 
@@ -52,6 +52,10 @@ export default class HalykBankService {
             this.retailCrmRepository.sendOrderBeenExportedConfirmation(halykBankOrder.orderNumber, halykBankOrder.site as StoresEnum)
         }
         return halykBankOrder;
+    }
+
+    public async confirmOrder(consfirmOrderInfo: ConfirmOrderInfoType): Promise<void> {
+        
     }
 
 }

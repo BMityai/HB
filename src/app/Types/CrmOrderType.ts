@@ -61,7 +61,6 @@ export default class CrmOrderType {
 
     public checkIsHalyk(): void
     {
-        console.log(this.payment.paymentType);
         if(this.payment.paymentType == 'halyk-credit' || this.payment.paymentType == 'halyk-rassrochka') {
             return;
         }

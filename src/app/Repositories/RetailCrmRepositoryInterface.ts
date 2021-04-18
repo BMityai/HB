@@ -14,7 +14,7 @@ export default interface RetailCrmRepositoryInterface {
     connectDeeplinkWithOrder(orderNumber: string, store: StoresEnum, deeplink: string): Promise<void>
 
     /**
-     * Send Confirmation Of Order Export
+     * Send confirmation of order export
      */
     sendOrderBeenExportedConfirmation(orderNumber: string, store: StoresEnum): Promise <void>
 }
