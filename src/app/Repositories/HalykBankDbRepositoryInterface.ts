@@ -1,3 +1,4 @@
+import ConfirmOrderInfoType from "../Types/ConfirmOrderInfoType";
 import CrmOrderType from "../Types/CrmOrderType";
 import HalykBankOrderType from "../Types/HalykBankOrderType";
 
@@ -42,4 +43,14 @@ export default interface HalykBankDbRepositoryInterface {
      * Change order status
      */
     changeOrderStatus(orderId: number, status: string): Promise<void>
+
+    /**
+     * Confirm order
+     */
+    confirmOrder(confirmOrderInfo: ConfirmOrderInfoType): Promise<void>
+
+    /**
+     * Update customer info
+     */
+    updateCustomerData(orderId: number, confirmOrderInfo: ConfirmOrderInfoType): Promise <void>
 }

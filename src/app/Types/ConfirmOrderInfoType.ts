@@ -12,7 +12,7 @@ export default interface ConfirmOrderInfoType {
         iin: string;
         name: string;
         surname: string;
-        patronyic: string | null;
+        patronymic: string | null;
         phone: string;
     }   
 }

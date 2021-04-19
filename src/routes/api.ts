@@ -32,6 +32,4 @@ router.post('/api/order/confirmation', (request: Request, response: Response, ne
 })
 
 
-
-
 export default router;

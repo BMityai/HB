@@ -96,7 +96,9 @@ export default class RetailCrmService {
                 return resolve(this.halykBankDbRepository.savePerProduct(product, orderId));
             }))
         }
-        Promise.all(promises)
+
+        // Run all promises
+        await Promise.all(promises)
     }
 
     public async getDeeplink(orderNumber: string): Promise <string>

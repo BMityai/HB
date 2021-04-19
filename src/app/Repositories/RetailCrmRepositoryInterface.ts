@@ -1,4 +1,5 @@
 import StoresEnum from "../Enums/StoresEnum";
+import ConfirmOrderInfoType from "../Types/ConfirmOrderInfoType";
 import CrmOrderType from "../Types/CrmOrderType";
 
 export default interface RetailCrmRepositoryInterface {
@@ -16,5 +17,10 @@ export default interface RetailCrmRepositoryInterface {
     /**
      * Send confirmation of order export
      */
-    sendOrderBeenExportedConfirmation(orderNumber: string, store: StoresEnum): Promise <void>
+    sendOrderBeenExportedConfirmation(orderNumber: string, store: StoresEnum): Promise<void>
+
+    /**
+     * Сhange the status of payment for the order depending on the decision made on the loan
+     */
+    changeOrderPaymentStatus(paymentId: string, confirmOrderInfo: ConfirmOrderInfoType): Promise<void>
 }

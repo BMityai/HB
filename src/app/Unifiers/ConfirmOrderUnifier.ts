@@ -24,7 +24,7 @@ export default class ConfirmOrderUnifier {
             iin: '',
             name: '',
             surname: '',
-            patronyic: null,
+            patronymic: null,
             phone: ''
         }   
     };
@@ -64,7 +64,7 @@ export default class ConfirmOrderUnifier {
                 iin: ['required'], 
                 name: ['required', 'string'],
                 surname: ['required', 'string'],
-                patronyic: ['string'],
+                patronymic: ['string'],
                 phone: ['required']
             }
         }
@@ -96,7 +96,7 @@ export default class ConfirmOrderUnifier {
             this.confirmOrderInfo.client.iin = this.params.client.iin;
             this.confirmOrderInfo.client.name = this.params.client.name;
             this.confirmOrderInfo.client.surname = this.params.client.surname;
-            this.confirmOrderInfo.client.patronyic = lodash.get(this.params, 'client.patronyic', null);
+            this.confirmOrderInfo.client.patronymic = lodash.get(this.params, 'client.patronymic', null);
             this.confirmOrderInfo.client.phone = this.params.client.phone;
         }
     }

@@ -4,6 +4,8 @@ import dbConfig from '../../config/database';
 import CrmOrderType from '../Types/CrmOrderType';
 import { isEmpty, isNull } from 'lodash';
 import HalykBankOrderType from '../Types/HalykBankOrderType';
+import ConfirmOrderInfoType from '../Types/ConfirmOrderInfoType';
+import { threadId } from 'node:worker_threads';
 
 
 
@@ -119,9 +121,9 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
     public async editComment(orderId: number, message: string): Promise<void> {
         const order = await this.dbConnection.client.table('orders').select('system_comment').where('id', orderId).first();
         await this.dbConnection.client.table('orders').where('id', orderId).update({
-            system_comment: !isNull(order.system_comment) 
-                            ? order.system_comment + new Date().toLocaleString() + ' - ' + message + '  \n' 
-                            : new Date().toLocaleString() + ' - ' + message + '  \n',
+            system_comment: !isNull(order.system_comment)
+                ? order.system_comment + new Date().toLocaleString() + ' - ' + message + '  \n'
+                : new Date().toLocaleString() + ' - ' + message + '  \n',
             updated_at: new Date()
         });
 
@@ -152,7 +154,6 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
         if (!isNull(products)) {
             halykBankOrder.setGoods(products);
         }
-
         return halykBankOrder;
     }
 
@@ -177,6 +178,43 @@ export default class HalykBankDbRepository implements HalykBankDbRepositoryInter
                 status: status,
                 updated_at: new Date()
             });
-       
+    }
+
+    /**
+     * Confirm order
+     */
+    public async confirmOrder(confirmOrderInfo: ConfirmOrderInfoType): Promise<void> {
+        const isConfirm = confirmOrderInfo.isConfirm;
+        await this.dbConnection.client.table('orders')
+            .where('number', confirmOrderInfo.orderNumber)
+            .first()
+            .update({
+                is_confirm: isConfirm,
+                status: isConfirm ? 'approved by bank' : 'denied by bank',
+                business_key: confirmOrderInfo.credit.businessKey,
+                document_number: confirmOrderInfo.credit.documentNumber,
+                approved_amount: confirmOrderInfo.credit.approvedAmount,
+                code: confirmOrderInfo.credit.code,
+                period: confirmOrderInfo.credit.period,
+                updated_at: new Date()
+            });
+    }
+
+    /**
+     * Update customer info
+     */
+    public async updateCustomerData(orderId: number, confirmOrderInfo: ConfirmOrderInfoType): Promise <void>
+    {
+        await this.dbConnection.client.table('customers')
+            .where('order_id', orderId)
+            .first()
+            .update({
+                name: confirmOrderInfo.client.name,
+                surname: confirmOrderInfo.client.surname,
+                patronymic: confirmOrderInfo.client.patronymic,
+                iin: confirmOrderInfo.client.iin,
+                phone: confirmOrderInfo.client.phone,
+                updated_at: new Date()
+            });
     }
 }

@@ -5,6 +5,9 @@ import retailCrmConfig from '../../config/retailCrm';
 import NoSuchOrderException from '../Exceptions/NoSuchOrderException';
 import CrmOrderType from '../Types/CrmOrderType';
 import RetailCrmRepositoryInterface from './RetailCrmRepositoryInterface';
+import ConfirmOrderInfoType from '../Types/ConfirmOrderInfoType';
+import HalykBankOrderType from '../Types/HalykBankOrderType';
+import dayjs from 'dayjs';
 
 export default class RetailCrmRepository implements RetailCrmRepositoryInterface {
     httpClient: AxiosInstance;
@@ -49,8 +52,7 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
     /**
      * Send deeplink to Retail CRM
      */
-    public async connectDeeplinkWithOrder(orderNumber: string, store: StoresEnum, deeplink: string): Promise<void> 
-    {
+    public async connectDeeplinkWithOrder(orderNumber: string, store: StoresEnum, deeplink: string): Promise<void> {
         // prepare data
         const params = {
             'apiKey': this.apiKey,
@@ -61,14 +63,16 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
             }),
             'site': store
         }
-       await this.httpClient.post('v5/orders/' + orderNumber + '/edit', params);
+
+        // Send request
+        await this.httpClient.post('v5/orders/' + orderNumber + '/edit', params);
     }
 
     /**
      * Send confirmation of order export
      */
-    public async sendOrderBeenExportedConfirmation(orderNumber: string, store: StoresEnum): Promise <void>
-    {
+    public async sendOrderBeenExportedConfirmation(orderNumber: string, store: StoresEnum): Promise<void> {
+        // Prepare params
         const params = {
             'apiKey': this.apiKey,
             'order': JSON.stringify({
@@ -78,6 +82,46 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
             }),
             'site': store
         }
+
+        // Send request
         await this.httpClient.post('v5/orders/' + orderNumber + '/edit', params);
+    }
+
+    /**
+     * Сhange the status of payment for the order depending on the decision made on the loan
+     */
+    public async changeOrderPaymentStatus(paymentId: string, confirmOrderInfo: ConfirmOrderInfoType): Promise<void> {
+        const status = confirmOrderInfo.isConfirm ? 'credit-approved' : 'failure';
+
+        // Prepare params
+        const params = {
+            apiKey: this.apiKey,
+            payment: JSON.stringify({
+                status: status
+            })
+        }
+
+        // Send request
+        await this.httpClient.post('v5/orders/payments/' + paymentId + '/edit', params);
+    }
+
+    public async addLoanDetailsToOrder(order: HalykBankOrderType, confirmOrderInfo: ConfirmOrderInfoType): Promise<void> {
+        // Prepare params
+        const params = {
+            apiKey: this.apiKey,
+            site: order.site,
+            order: JSON.stringify({
+                customFields: {
+                    inn: confirmOrderInfo.client.iin,
+                    bank_agreement_number: confirmOrderInfo.credit.documentNumber,
+                    bank_agreement_date: dayjs().format('DD-MM-YYYY'),
+                    name_credit_product: confirmOrderInfo.credit.code == 'loan' ? 'кредит' : 'рассрочка',
+                    credit_term: confirmOrderInfo.credit.period,
+                },
+            })
+        }
+
+        // Send request
+        await this.httpClient.post('v5/orders/' + order.orderNumber + '/edit', params);
     }
 }

@@ -5,7 +5,6 @@ import axios, { AxiosInstance } from 'axios';
 
 export default class HalykBankRepository implements HalykBankRepositoryInterface {
     
-    private getDeeplinkurl: string;
     private httpClient: AxiosInstance;
 
     constructor()
@@ -20,6 +19,7 @@ export default class HalykBankRepository implements HalykBankRepositoryInterface
             }
         )
     }
+
     /**
      * Get Deeplink
      */

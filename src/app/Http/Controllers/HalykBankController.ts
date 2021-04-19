@@ -48,7 +48,7 @@ export default class HalykBankController {
             this.logger.info('Order # ' + orderNumber + ' successfully exported to Halyk Bank');
             
             // Remove unnecessary class properties
-            order?.deleteProps(['order', 'id', 'site']);
+            order?.deleteProps(['order', 'id', 'site', 'payment_id']);
 
             // Prepare http response
             const httpResponse: HttpResponse = {

@@ -7,6 +7,7 @@ export default class HalykBankOrderType {
     public id: number;
     public site: string;
     public cartAmount: string;
+    public paymentId: string;
     public creditCode: string;
     public orderNumber: string;
     public deliveryType: string;
@@ -42,6 +43,7 @@ export default class HalykBankOrderType {
         this.order = order;
         this.id = order.id;
         this.site = order.site;
+        this.paymentId = order.payment_id;
         this.cartAmount = order.cart_amount;
         this.creditCode = order.credit_code;
         this.orderNumber = order.number;
@@ -100,6 +102,10 @@ export default class HalykBankOrderType {
         if((['approved by the bank', 'error approved by the bank', 'done approved by the bank'].includes(orderStatus))) {
             throw new OrderIsApprovedByBankException('Order #' + orderNumber + ' has already been received by the bank for processing');
         }
+    }
 
+    public isExportedToBank(): boolean
+    {
+        return this.order.status != 'exported to bank';
     }
 }
