@@ -21,6 +21,8 @@ export default class RetailCrmController {
      * Receiving order from RetailCrm
      */
     public async createOrder(request: Request, response: Response, next: NextFunction) {
+        
+        // Init unifier
         const createOrderUnifier = new CreateOrderUnifier(request.query);
 
         try {
@@ -40,6 +42,8 @@ export default class RetailCrmController {
      * Receiving order from RetailCrm
      */
     public async getDeeplink(request: Request, response: Response, next: NextFunction) {
+
+        // Init unifier
         const createOrderUnifier = new CreateOrderUnifier(request.query);
 
         try {
@@ -48,6 +52,28 @@ export default class RetailCrmController {
             this.logger.info('Request to Get DeepLink ' + orderNumber + ' from retail crm');
             const deeplink = await this.service.getDeeplink(orderNumber);
             this.logger.info('Deeplink ' + deeplink + ' for order #' + orderNumber + ' created successfully');
+
+            return response.send();
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
+     * Processing a cancellation request from crm
+     */
+    public async cancelOrder(request: Request, response: Response, next: NextFunction)
+    {
+
+        // Init unifier
+        const createOrderUnifier = new CreateOrderUnifier(request.query);
+        
+        try {
+            let orderNumber = createOrderUnifier.orderNumber;
+
+            this.logger.info('Request to cancel order ' + orderNumber + ' from retail crm');
+            await this.service.cancelOrder(orderNumber);
+            this.logger.info('Order #' + orderNumber + ' canceled successfully');
 
             return response.send();
         } catch (error) {

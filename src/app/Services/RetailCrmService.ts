@@ -1,15 +1,23 @@
+import { isNull } from 'lodash';
 import StoresEnum from '../Enums/StoresEnum';
+import NoSuchOrderException from '../Exceptions/NoSuchOrderException';
 import HalykBankDbRepository from '../Repositories/HalykBankDbRepositoryInterface'
 import HalykBankRepository from '../Repositories/HalykBankRepositoryInterface'
 import RetailCrmRepository from '../Repositories/RetailCrmRepositoryInterface'
 import CrmOrderType from "../Types/CrmOrderType";
+import HalykBankOrderType from '../Types/HalykBankOrderType';
+import LoggerService from 'sosise-core/build/Services/Logger/LoggerService';
+import IOC from 'sosise-core/build/ServiceProviders/IOC';
+
 
 
 export default class RetailCrmService {
 
-    private halykBankDbRepository: HalykBankDbRepository
-    private halykBankRepository: HalykBankRepository
-    private retailCrmRepository: RetailCrmRepository
+    private halykBankDbRepository: HalykBankDbRepository;
+    private halykBankRepository: HalykBankRepository;
+    private retailCrmRepository: RetailCrmRepository;
+    private logger: LoggerService;
+
 
     private SKIP_PRODUCT_STATUSES = [
         'niet-nighdie-na-ostatkakh',
@@ -38,9 +46,10 @@ export default class RetailCrmService {
         halykBankRepository: HalykBankRepository,
         retailCrmRepository: RetailCrmRepository
     ) {
-        this.halykBankDbRepository = halykBankDbRepository
-        this.halykBankRepository = halykBankRepository
-        this.retailCrmRepository = retailCrmRepository
+        this.halykBankDbRepository = halykBankDbRepository;
+        this.halykBankRepository = halykBankRepository;
+        this.retailCrmRepository = retailCrmRepository;
+        this.logger = IOC.make(LoggerService) as LoggerService;
     }
 
     /**
@@ -56,26 +65,26 @@ export default class RetailCrmService {
 
         //save order
         const orderId = await this.halykBankDbRepository.saveOrder(crmOrder);
-     
+
         const promises = new Array;
 
         //save customer phone promise
         promises.push(this.halykBankDbRepository.saveCustomerPhone(crmOrder.customerPhone, orderId));
-        
+
 
         //save order products promise
         promises.push(this.saveOrderProducts(crmOrder, orderId));
-        
+
         //save spend bonuses promise
         promises.push(this.halykBankDbRepository.saveSpendBonuses(crmOrder.payment.spendBonuses, orderId));
-           
+
         //save order service promise
         promises.push(this.halykBankDbRepository.saveService(crmOrder.delivery, orderId));
-           
+
 
         //save log info to db
         promises.push(this.halykBankDbRepository.editComment(orderId, 'import from crm'));
-           
+
         //run all promises 
         await Promise.all(promises);
     }
@@ -101,8 +110,7 @@ export default class RetailCrmService {
         await Promise.all(promises)
     }
 
-    public async getDeeplink(orderNumber: string): Promise <string>
-    {
+    public async getDeeplink(orderNumber: string): Promise<string> {
         // Get order by orderNumber from Retail CRM
         const crmOrder = await this.retailCrmRepository.getOrderByNumber(orderNumber);
 
@@ -114,7 +122,44 @@ export default class RetailCrmService {
 
         // Connect deeplink to crm order
         await this.retailCrmRepository.connectDeeplinkWithOrder(crmOrder.number, crmOrder.site as StoresEnum, deeplink);
-        
+
         return deeplink;
     }
+
+    public async cancelOrder(orderNumber: string): Promise<void> {
+
+        // Get order by orderNumber from Retail CRM
+        const order = await this.halykBankDbRepository.getOrderByNumber(orderNumber);
+
+        if (isNull(order)) {
+            throw new NoSuchOrderException('Order #' + orderNumber + ' Not Found');
+        }
+
+        // Log info to db
+        await this.halykBankDbRepository.editComment(order.id, 'Request to cancel order from retail crm');
+
+        try {
+            // Send request to bank for cancel order
+            await this.cancelOrderInBank(order);
+
+            // Log
+            await this.halykBankDbRepository.editComment(order.id, 'Order status successfully changed to "cancel"');
+            this.logger.info('Order # ' + orderNumber + ' successfully changed status to "cancel"');
+
+        } catch(error) {
+            await this.halykBankDbRepository.editComment(order.id, 'An error occurred while changing the order status to "canceled" in bank. Error: ' + error.message);
+            this.logger.critical(error);
+        }
+
+
+    }
+
+    /**
+     * Send request to bank for cancel order
+     */
+    private async cancelOrderInBank(order: HalykBankOrderType): Promise <void> {
+        order.checkForIssetBusinessKey();
+        await this.halykBankRepository.cancelOrder(order);
+    }
+        
 }

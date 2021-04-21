@@ -12,7 +12,7 @@ export default class NoSuchOrderException extends Exception {
     /**
      * Constructor
      */
-    constructor(message: string) {
+    constructor(message: string = 'Order not found') {
         super(message);
     }
 

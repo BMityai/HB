@@ -21,6 +21,10 @@ router.get('/api/halyk_bank/get_deeplink', (request: Request, response: Response
     retailCrmController.getDeeplink(request, response, next);
 });
 
+router.post('/api/halyk_bank/cancel_order', (request: Request, response: Response, next: NextFunction) => {
+    retailCrmController.cancelOrder(request, response, next);
+});
+
 
 // Requests from halyk bank
 router.get('/api/orders/:order_number', (request: Request, response: Response, next: NextFunction) => {

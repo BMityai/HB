@@ -1,6 +1,7 @@
 import CancelOrderFromBankException from "../Exceptions/CancelOrderFromBankException";
 import CancelOrderFromCrmException from "../Exceptions/CancelOrderFromCrmException";
 import IsConfirmHalykBankOrderException from "../Exceptions/IsConfirmHalykBankOrderException";
+import NotSetBusinessKeyException from "../Exceptions/NotSetBusinessKeyException";
 import OrderIsApprovedByBankException from "../Exceptions/OrderIsApprovedByBankException";
 
 export default class HalykBankOrderType {
@@ -37,6 +38,7 @@ export default class HalykBankOrderType {
             childQnty: '0',
         }
 
+    public businessKey: string | null;
     public order: any;
 
     constructor(order: any) {
@@ -51,6 +53,7 @@ export default class HalykBankOrderType {
         this.deliveryCity = order.delivery_city;
         this.deliveryAddress = order.delivery_address;
         this.pickupPointName = order.pickup_point_name;
+        this.businessKey = order.business_key;
     }
 
     public setGoods(goods: any): void {
@@ -86,26 +89,32 @@ export default class HalykBankOrderType {
         }
     }
 
+
     public checkStatus(): void {
         const orderStatus = this.order.status;
         const orderNumber = this.order.number;
-        
+
         // Is cancel from Retail Crm
-        if(['cancel', 'done cancel', 'error cancel'].includes(orderStatus)) {
-            throw new CancelOrderFromCrmException('Order #' + orderNumber + ' has been canceled by a customer'); 
+        if (['cancel', 'done cancel', 'error cancel'].includes(orderStatus)) {
+            throw new CancelOrderFromCrmException('Order #' + orderNumber + ' has been canceled by a customer');
         }
         // Is cancel from Bank
-        if((['denied by bank', 'done denied by bank', 'error denied by bank'].includes(orderStatus))) {
+        if ((['denied by bank', 'done denied by bank', 'error denied by bank'].includes(orderStatus))) {
             throw new CancelOrderFromBankException('Order #' + orderNumber + ' has been canceled by the bank');
         }
         // Is approved by bank
-        if((['approved by the bank', 'error approved by the bank', 'done approved by the bank'].includes(orderStatus))) {
+        if ((['approved by the bank', 'error approved by the bank', 'done approved by the bank'].includes(orderStatus))) {
             throw new OrderIsApprovedByBankException('Order #' + orderNumber + ' has already been received by the bank for processing');
         }
     }
 
-    public isExportedToBank(): boolean
-    {
+    public isExportedToBank(): boolean {
         return this.order.status != 'exported to bank';
+    }
+
+    public checkForIssetBusinessKey() {
+        if (!this.businessKey) {
+            throw new NotSetBusinessKeyException('Business key not set for order: ' + this.orderNumber);
+        }
     }
 }
