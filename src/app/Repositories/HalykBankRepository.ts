@@ -62,7 +62,7 @@ export default class HalykBankRepository implements HalykBankRepositoryInterface
 
         console.log(params);
 
-        const response = await this.httpClient.post('', data, {
+        const response = await this.httpClient.post('', params, {
             baseURL: this.getTokenUrl,
             headers: {
                 'Content-Type': 'multipart/form-data'
