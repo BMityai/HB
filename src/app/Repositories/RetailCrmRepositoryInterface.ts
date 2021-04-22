@@ -1,6 +1,7 @@
 import StoresEnum from "../Enums/StoresEnum";
 import ConfirmOrderInfoType from "../Types/ConfirmOrderInfoType";
 import CrmOrderType from "../Types/CrmOrderType";
+import HalykBankOrderType from "../Types/HalykBankOrderType";
 
 export default interface RetailCrmRepositoryInterface {
 
@@ -23,4 +24,18 @@ export default interface RetailCrmRepositoryInterface {
      * Сhange the status of payment for the order depending on the decision made on the loan
      */
     changeOrderPaymentStatus(paymentId: string, confirmOrderInfo: ConfirmOrderInfoType): Promise<void>
+
+    /**
+     * Add loan details
+     */
+    addLoanDetailsToOrder(order: HalykBankOrderType, confirmOrderInfo: ConfirmOrderInfoType): Promise<void> 
+
+    /**
+     * Send a request for successful order cancellation
+     */
+    confirmCancellation(order: HalykBankOrderType): Promise <void>
+
+    
+
+
 }

@@ -146,19 +146,38 @@ export default class RetailCrmService {
             await this.halykBankDbRepository.editComment(order.id, 'Order status successfully changed to "cancel"');
             this.logger.info('Order # ' + orderNumber + ' successfully changed status to "cancel"');
 
+            const promises = new Array;
+
+            // Send request to bank for cancel order
+            promises.push(this.cancelOrderInBank(order));
+
+            // Send a request to crm for successful order cancellation in bank
+            promises.push(this.retailCrmRepository.confirmCancellation(order));
+
+            // Change local order status
+            promises.push(this.halykBankDbRepository.changeOrderStatus(order.id, 'done cancel'));
+
+            // Run all promises
+            await Promise.all(promises);
+
         } catch(error) {
+
             await this.halykBankDbRepository.editComment(order.id, 'An error occurred while changing the order status to "canceled" in bank. Error: ' + error.message);
+
+            // Change local order status
+            await this.halykBankDbRepository.changeOrderStatus(order.id, 'error cancel');
+
             this.logger.critical(error);
         }
-
-
     }
 
     /**
      * Send request to bank for cancel order
      */
     private async cancelOrderInBank(order: HalykBankOrderType): Promise <void> {
+        
         order.checkForIssetBusinessKey();
+        
         await this.halykBankRepository.cancelOrder(order);
     }
         

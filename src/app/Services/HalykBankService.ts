@@ -81,13 +81,30 @@ export default class HalykBankService {
         // Logging to db
         const status = confirmOrderInfo.isConfirm ? 'approved by bank' : 'denied by bank';
         await this.halykBankDbRepository.editComment(order.id, 'Order #' + order.orderNumber + ' app_status changed to "' + status + '"');
+        
+        try {
 
-        // Send confirm order info to crm
-        this.confirmOrderInCrm(order, confirmOrderInfo);
+            // Send confirm order info to crm
+            await this.confirmOrderInCrm(order, confirmOrderInfo);
+
+            // Change status
+            await this.halykBankDbRepository.changeOrderStatus(order.id, 'done ' + status);
+            
+        } catch(error) {
+
+            // Logging to db
+            await this.halykBankDbRepository.editComment(order.id, 'An error occurred while updating the order in crm. \n' + error)
+
+            // Change status
+            await this.halykBankDbRepository.changeOrderStatus(order.id, 'error ' + status);
+
+            this.logger.critical(error);
+            
+            throw new CantAddLoanDetailsToCrmException('An error occurred while updating the order in crm')
+        }
     }
 
     private async confirmOrderInCrm(order: HalykBankOrderType, confirmOrderInfo: ConfirmOrderInfoType): Promise<void> {
-        try {
 
             const promises = new Array;
 
@@ -105,15 +122,6 @@ export default class HalykBankService {
 
             // Run all promises
             await Promise.all(promises)
-
-        } catch(error) {
-            // Logging to db
-            await this.halykBankDbRepository.editComment(order.id, 'An error occurred while updating the order in crm. \n' + error)
-
-            this.logger.critical(error);
-            
-            throw new CantAddLoanDetailsToCrmException('An error occurred while updating the order in crm')
-        }
         
     }
 

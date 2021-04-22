@@ -7,6 +7,7 @@ import OrderIsApprovedByBankException from "../Exceptions/OrderIsApprovedByBankE
 export default class HalykBankOrderType {
     public id: number;
     public site: string;
+    public status: string;
     public cartAmount: string;
     public paymentId: string;
     public creditCode: string;
@@ -45,6 +46,7 @@ export default class HalykBankOrderType {
         this.order = order;
         this.id = order.id;
         this.site = order.site;
+        this.status = order.status;
         this.paymentId = order.payment_id;
         this.cartAmount = order.cart_amount;
         this.creditCode = order.credit_code;
@@ -77,7 +79,8 @@ export default class HalykBankOrderType {
     /**
      * Remove unnecessary class properties
      */
-    public deleteProps(props: string[]): void {
+    public removeServiceProps(): void {
+        const props = ['order', 'id', 'site', 'paymentId', 'businessKey', 'status'];
         for (const prop of props) {
             delete this[prop];
         }

@@ -105,6 +105,9 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
         await this.httpClient.post('v5/orders/payments/' + paymentId + '/edit', params);
     }
 
+    /**
+     * Add loan details
+     */
     public async addLoanDetailsToOrder(order: HalykBankOrderType, confirmOrderInfo: ConfirmOrderInfoType): Promise<void> {
         // Prepare params
         const params = {
@@ -117,6 +120,26 @@ export default class RetailCrmRepository implements RetailCrmRepositoryInterface
                     bank_agreement_date: dayjs().format('DD-MM-YYYY'),
                     name_credit_product: confirmOrderInfo.credit.code == 'loan' ? 'кредит' : 'рассрочка',
                     credit_term: confirmOrderInfo.credit.period,
+                },
+            })
+        }
+
+        // Send request
+        await this.httpClient.post('v5/orders/' + order.orderNumber + '/edit', params);
+    }
+
+    /**
+     * Send a request for successful order cancellation
+     */
+    public async confirmCancellation(order: HalykBankOrderType): Promise <void>
+    {
+        // Prepare params
+        const params = {
+            apiKey: this.apiKey,
+            site: order.site,
+            order: JSON.stringify({
+                customFields: {
+                    canceled_by_partner: true
                 },
             })
         }

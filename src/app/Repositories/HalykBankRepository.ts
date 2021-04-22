@@ -2,6 +2,7 @@ import HalykBankRepositoryInterface from './HalykBankRepositoryInterface';
 import halykConfig from '../../config/halyk';
 import CrmOrderType from '../Types/CrmOrderType';
 import axios, { AxiosInstance } from 'axios';
+import FormData from 'form-data';
 import HalykBankOrderType from '../Types/HalykBankOrderType';
 
 export default class HalykBankRepository implements HalykBankRepositoryInterface {
@@ -46,34 +47,45 @@ export default class HalykBankRepository implements HalykBankRepositoryInterface
      * Send request to bank for cancel order
      */
     public async cancelOrder(order: HalykBankOrderType): Promise<void> {
+        // Interservice communication token
         const token = await this.getAnInterserviceCommunicationToken();
-        console.log(token);
-    }
 
-    private async getAnInterserviceCommunicationToken(): Promise<void> {
+        // Prepare url for cancel order
+        const url = 'homebank-api/api/v1/applications/commodity-credits/' + order.businessKey + '/status';
 
         // Prepare params
         const params = {
-            grant_type: 'client_credentials',
-            scope: this.scope,
-            client_id: this.clientId,
-            client_secret: this.clientSecret
+            status: 'cancelled'
         }
 
-        console.log(params);
+        // Prepare headers 
+        const headers = {
+            Authorization: 'Bearer ' + token,
+            Accept: 'application/json'
+        }
 
-        const response = await this.httpClient.post('', params, {
+        const response = await this.httpClient.put(url, params, {
+            headers: headers
+        });
+    }
+
+    private async getAnInterserviceCommunicationToken(): Promise<string> {
+
+        // Prepare params (form-data)
+        let formData = new FormData();
+        formData.append('grant_type', 'client_credentials');
+        formData.append('scope', 'commodity_credits');
+        formData.append('client_id', 'marwin');
+        formData.append('client_secret', 'h4v5xRhOJFa75GhTzYvoT1HMesWfbF4kqU4qeNy1nHegTgblrJNWNstF2');
+
+        // Send request
+        const response = await this.httpClient.post('', formData, {
             baseURL: this.getTokenUrl,
             headers: {
-                'Content-Type': 'multipart/form-data'
+                ...formData.getHeaders()
             }
         });
 
-        
-        console.log(response)
         return response.data.access_token;
-
-
-
     }
 }
